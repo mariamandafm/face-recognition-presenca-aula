@@ -1,5 +1,8 @@
 import cv2
 from datetime import datetime
+from Adafruit_IO import Client, Feed
+from base64 import b64encode
+
 from reconhecer_rostos import aferir_presenca
 
 alunos = {
@@ -13,6 +16,7 @@ alunos = {
     "angela_martin": "Angela Martin",
     "kelly_kapoor": "Kelly Kapoor",
     "oscar_martinez": "Oscar Martinez",
+    "Unknown": "Desconhecido"
 }
 
 # Function to capture an image
@@ -47,10 +51,17 @@ def capture_image():
 # capture_image()
 
 
-presentes = aferir_presenca('reuniao/ex2.jpg')
+presentes = aferir_presenca('reuniao/ex1.png')
 if (len(presentes) > 0):
     print("Presentes: ")
     for presente in presentes:
         print(alunos[presente])
 
+quantidade_presentes = len(presentes)
+
+clientREST = Client(username='XX', key='XX')
+
+feed = Feed(name='presenca')
+
+clientREST.send_data('presenca', quantidade_presentes)
 
