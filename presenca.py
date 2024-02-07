@@ -1,7 +1,6 @@
 import cv2
 from datetime import datetime
 from Adafruit_IO import Client, Feed
-from base64 import b64encode
 
 from reconhecer_rostos import aferir_presenca
 
@@ -15,53 +14,60 @@ alunos = {
     "kevin_malone": "Kevin Malone",
     "angela_martin": "Angela Martin",
     "kelly_kapoor": "Kelly Kapoor",
-    "oscar_martinez": "Oscar Martinez",
-    "Unknown": "Desconhecido"
+    "oscar_martinez": "Oscar Martinez"
 }
 
-# Function to capture an image
 def capture_image():
-    # Access the default camera (index 0)
-    cap = cv2.VideoCapture(0)
+    video_file_path = 'reuniao/meeting.mp4'
+    cap = cv2.VideoCapture(video_file_path)
 
     while True:
-        # Capture frame-by-frame
         ret, frame = cap.read()
 
-        # Display the captured frame
         cv2.imshow('Press "p" to capture', frame)
 
-        # Wait for 'p' key to be pressed
-        if cv2.waitKey(1) & 0xFF == ord('p'):
+        if cv2.waitKey(33) & 0xFF == ord('p'):
             current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-            # Construct the file name with the current date and time
-            file_name = f"captured_image_{current_time}.jpg"
+            file_name = f"reuniao/captured_image_{current_time}.jpg"
 
-            # Save the captured image with the constructed file name
             cv2.imwrite(file_name, frame)
-            print("Image captured!")
             break
 
-    # Release the camera and close the OpenCV windows
     cap.release()
     cv2.destroyAllWindows()
-
-# Call the function to capture an image
-# capture_image()
+    return file_name
 
 
-presentes = aferir_presenca('reuniao/ex1.png')
-if (len(presentes) > 0):
-    print("Presentes: ")
-    for presente in presentes:
-        print(alunos[presente])
+imagem = capture_image()
+presentes = aferir_presenca(imagem)
+
+
+def criar_texto(pessoas):
+    texto = ''
+    if (len(pessoas) > 0):
+        for aluno in pessoas:
+            texto += alunos[aluno] + '\n'
+    return texto
+
+
+faltas = list(set(alunos.keys()) - presentes)
 
 quantidade_presentes = len(presentes)
+alunos_presentes = criar_texto(presentes)
+alunos_falta = criar_texto(faltas)
 
-clientREST = Client(username='XX', key='XX')
-
+clientREST = Client(username='mariamanda', key='aio_LqTD90xkOTBf8jWwStUF78gUZhZE')
 feed = Feed(name='presenca')
 
 clientREST.send_data('presenca', quantidade_presentes)
 
+if (alunos_presentes):
+    clientREST.send_data('alunos', alunos_presentes)
+else:
+    clientREST.send_data('alunos', "Nenhum aluno está presente")
+
+if (alunos_falta):
+    clientREST.send_data('faltas', alunos_falta)
+else:
+    clientREST.send_data('alunos', "Todos estão presente")
