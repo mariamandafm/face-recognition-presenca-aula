@@ -1,8 +1,12 @@
 import cv2
 from datetime import datetime
 from Adafruit_IO import Client, Feed
+from dotenv import load_dotenv
+import os
 
 from reconhecer_rostos import aferir_presenca
+
+load_dotenv()
 
 alunos = {
     "jim_helpert": "Jim Helpert",
@@ -18,7 +22,7 @@ alunos = {
 }
 
 def capture_image():
-    video_file_path = 'reuniao/meeting.mp4'
+    video_file_path = 0
     cap = cv2.VideoCapture(video_file_path)
 
     while True:
@@ -57,7 +61,8 @@ quantidade_presentes = len(presentes)
 alunos_presentes = criar_texto(presentes)
 alunos_falta = criar_texto(faltas)
 
-clientREST = Client(username='mariamanda', key='aio_LqTD90xkOTBf8jWwStUF78gUZhZE')
+
+clientREST = Client(username='mariamanda', key=os.getenv('ADAFRUIT_IO_KEY'))
 feed = Feed(name='presenca')
 
 clientREST.send_data('presenca', quantidade_presentes)

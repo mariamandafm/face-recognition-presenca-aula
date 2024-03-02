@@ -1,0 +1,4 @@
+opencv-python
+adafruit-io
+face_recognition
+python-dotenv
